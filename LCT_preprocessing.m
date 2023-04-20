@@ -43,12 +43,15 @@ classdef LCT_preprocessing
            EEG = eeg_checkset( EEG );
            fprintf('band filter done \n')
            % Notch filter at 60Hz
-           EEG = pop_eegfiltnew(EEG, 'locutoff',59.9,'hicutoff',60.1);
-           EEG = eeg_checkset( EEG );
+           [b,a] = notch(256, 60);
+           for i = 1:size(EEG.data)
+               EEG.data(i) = filter(b, a, EEG.data(i));
+           end
+           fprintf('notch filter done \n')
            %% Remove noisy channel
            [EEG, indelect] = pop_rejchan(EEG, 'threshold',3, 'norm','on', 'measure','kurt');
            EEG = eeg_checkset( EEG );
-           noischa_save = sprintf('/Users/joannaq/Desktop/LIINC/LCT/processed_data/noisy_channel/%s_%s.mat', time, player_id);
+           noischa_save = sprintf('/Users/joannaq/Desktop/LIINC/LCT/data/processed_data/noisy_channel/%s_%s.mat', time, player_id);
            save(noischa_save, 'indelect');
            %% Run ICA
            EEG = pop_runica(EEG, 'icatype', 'runica', 'extended',1,'interrupt','on');
@@ -59,7 +62,7 @@ classdef LCT_preprocessing
            %% Save the ICA weights and sphere
            ICA_weights = EEG.icaweights;
            ICA_sphere = EEG.icasphere;
-           ICA_save_name = sprintf('/Users/joannaq/Desktop/LIINC/LCT/processed_data/ica_weights/%s_%s.mat', time, player_id);
+           ICA_save_name = sprintf('/Users/joannaq/Desktop/LIINC/LCT/data/processed_data/ica_weights/%s_%s.mat', time, player_id);
            save(ICA_save_name,'ICA_weights','ICA_sphere');
            %% Export .mat
            preprocessed_EEG = EEG.data;
@@ -78,10 +81,19 @@ classdef LCT_preprocessing
                end
            end
            preprocessed_EEG(end+1,:) = EEG.times;
-           eeg_save_path = sprintf('/Users/joannaq/Desktop/LIINC/LCT/processed_data/processed/%s_%s.mat', time, player_id);
+           eeg_save_path = sprintf('/Users/joannaq/Desktop/LIINC/LCT/data/processed_data/processed/%s_%s.mat', time, player_id);
            save(eeg_save_path, 'preprocessed_EEG', '-v7');
            eeglab redraw;
            fprintf('eeg saved \n')
        end
    end
+end
+
+function [b, a] = notch(fs,notch_freq)
+    DT_notch_freq = 2*pi*notch_freq/fs;
+    r = 0.7;
+    notchzeros = [exp(1i*DT_notch_freq) exp(-1i*DT_notch_freq)];
+    notchpoles = [r*exp(1i*DT_notch_freq) r*exp(-1i*DT_notch_freq)];
+    b = poly(notchzeros);
+    a = poly(notchpoles);
 end

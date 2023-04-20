@@ -19,9 +19,9 @@ shape = str_size(2);
 % create class
 eeg_preprocess = LCT_preprocessing();
 % open txt file
-fid = fopen('/Users/joannaq/Desktop/LIINC/LCT/processed_data/report.txt','a');
+fid = fopen('/Users/joannaq/Desktop/LIINC/LCT/data/processed_data/report.txt','a');
 % loop
-for i = 31:38
+for i = 1:size(session)
     % filepath
     xdf_filepath = sprintf('/Users/joannaq/Desktop/LIINC/LCT/data/raw_data/%s%s', ...
                            session(i), '_LCT.xdf');
@@ -44,7 +44,7 @@ for i = 31:38
 end
 fclose(fid);
 %%
-filename = "0818_1000_LCT.xdf";
+filename = "1005_1600_LCT.xdf";
 xdf_filepath = '/Users/joannaq/Desktop/LIINC/LCT/data/raw_data/' + filename;
 eeg_preprocess = LCT_preprocessing();
 [data_1, data_2, data_3, data_4] = eeg_preprocess.load_data(xdf_filepath);
@@ -52,5 +52,5 @@ eeg_preprocess = LCT_preprocessing();
 data = {data_1, data_2, data_3, data_4};
 count = find(~cellfun(@isempty, data));
 for i=1:length(count)
-    eeg_preprocess.process_eeg(data(count(i)), "0818_1000", string(i))
+    eeg_preprocess.process_eeg(data(count(i)), "1005_1600", string(i))
 end
